@@ -9,17 +9,17 @@
     <h1>PA1: Image and Signal Processing</h1>
     <hr>
     <section>
-      <h2>Prerequisites</h2>
-      <p>This program has some library prerequisites. Please ensure you have GLFW 3 and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. This version was originally chosen as it is the highest OpenGL version that Mac OSX supports. While it's probably not strictly required for this assignment, my renderer expects this version, and I did not have time to refactor for 3.X support. Thank you for understanding.</p>
+      <h1>Prerequisites</h1>
+      <p>This program has some library prerequisites. Please ensure you have GLFW 3 and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. This version was originally chosen as it is the highest OpenGL version that Mac OSX supports. While it's probably not strictly required for this assignment, my renderer expects this version, and I unfortunately did not have time to refactor for 3.X support.</p>
     </section>
     <section>
-      <h2>Support functionality</h2>
+      <h1>Support functionality</h1>
       <p>I've chosen not to use the provided starter code, instead opting to base my program on my OpenGL boilerplate that I've been using for graphics classes this year. The repository for this can be found <a href="https://github.com/christetreault/opengl-sandbox.git">on Github</a>. My program allows for an interactive interface; the only command line my program accepts is a filename to open.</p>
       <pre>./imaging [filename]</pre>
       <p>My program supports many filetypes thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, and .jpg files that I have tried</p>
       <p>Once a file is loaded, a window should appear with the image showing. To perform an operation, press Enter. Assuming your window manager is well-behaved, the window should disappear. Unfortunately, it seems that the Mac OS window manager does not respect GLFW's hide window command, so for this reason I request you use the Linux version for grading. Regardless, in the command window, you should see:</p>
       <pre>Enter a command:</pre>
-      <p>If your window actually hid itself, the command prompt likely has focus. If not, click into it and enter a command and press enter. The command should execute.</p>
+      <p>If your window actually hid itself, the command prompt likely has focus. If not, click into it and enter a command and press enter. The command should execute. If any of the parameters are out of the specified range, the help message for that command will be shown and the command will not proceed.</p>
       <h2>help</h2>
       <p>The first command is <code>help</code>. Press enter and type help at the prompt. You should see a listing similar to the following:</p>
       <pre>help
@@ -82,5 +82,30 @@ Antialiasing filter = nearest neighbor</pre>
     <p>When in random mode, a random value is chosen from the valid range if a value outside the valid range is requested. Focus groups have determined that this behavior is "super useful."</p>
     <h2>antialiasFilter</h2>
     <p>The antialias filter to be used by scales and traslations can be set using this command. The three required filters (nearestNeighbor, hat, and mitchell) are all implemented and can be selected by name.</p>
+    <h1>Part 1: Basic Operations</h1>
+    <h2>brighten</h2>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 0.5 →<img src="images/brightenHalf.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 2.0 →<img src="images/brightenTwo.png"></div>
+    <p>Brighten multiplies each color channel by the given factor. Alpha is ignored.
+      <h2>contrast</h2>
+      <div class="imageCompare"><img src="images/waveBase.png">→ -1.0 →<img src="images/contrastMinus1.png"></div>
+      <div class="imageCompare"><img src="images/waveBase.png">→ 0.5 →<img src="images/contrastHalf.png"></div>
+      <div class="imageCompare"><img src="images/waveBase.png">→ 2.0 →<img src="images/contrastTwo.png"></div>
+    <p>First the average luminance of each pixel is computed. After that, each pixel is linearly interpolated against the average luminance, using the contrast factor as the interpolation value.</p>
+    <h2>saturation</h2>
+      <div class="imageCompare"><img src="images/waveBase.png">→ -1.0 →<img src="images/saturationMinus1.png"></div>
+      <div class="imageCompare"><img src="images/waveBase.png">→ 0.5 →<img src="images/saturationHalf.png"></div>
+      <div class="imageCompare"><img src="images/waveBase.png">→ 2.0 →<img src="images/saturationTwo.png"></div>
+    <p>First the grayscale image is computed. Then each pixel is linearly interpolated against its corresponding pixel in the grayscale image using the saturation factor as the interpolation value.</p>
+    <h2>gamma</h2>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 0.0 →<img src="images/gammaZero.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 0.5 →<img src="images/gammaHalf.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 2.0 →<img src="images/gammaTwo.png"></div>
+    <p>Gamma is implemented using the formula: c_new = c_old^(1/gamma). Alpha is ignored. gamma(0) is implemented as a special case, where 0 is output for each pixel, unless its value is 1, in which case 1 is output. You can see the effect of this in the sample above, where all but a few pixels are driven to zero.</p>
+    <h2>crop</h2>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 0, 0, 84, 63 →<img src="images/cropTopLeft.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 84, 63, 84, 63 →<img src="images/cropBottomRight.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 42, 63, 84, 63 →<img src="images/cropTheFace.png"></div>
+    <p>Crop simply copies the pixels from the requested region of the source image to the destination.</p>
   </body>
 </html>
