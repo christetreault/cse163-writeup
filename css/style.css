@@ -1,0 +1,34 @@
+body {
+    color: white;
+    background-color: black;
+}
+
+p {
+    color: whitesmoke;
+}
+
+pre {
+    color: black;
+    background-color: gray;
+    padding: 1em;
+    margin: 2em;
+    font-family: monospace;
+}
+
+code {
+    color: black;
+    background-color: lightgray;
+    font-family: monospace;
+}
+
+div.imageCompare {
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+    font-size: xx-large;
+    font-weight: bold;
+}
+
+div.imageCompare > img {
+    margin: 0em 2em 0em 2em;
+}

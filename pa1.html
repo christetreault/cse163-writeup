@@ -1,6 +1,86 @@
+<!DOCTYPE html>
 <html>
+  <head>
+    <title>PA1: Image and Signal Processing</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+  </head>
   <body>
     <h1>PA1: Image and Signal Processing</h1>
     <hr>
+    <section>
+      <h2>Prerequisites</h2>
+      <p>This program has some library prerequisites. Please ensure you have GLFW 3 and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. This version was originally chosen as it is the highest OpenGL version that Mac OSX supports. While it's probably not strictly required for this assignment, my renderer expects this version, and I did not have time to refactor for 3.X support. Thank you for understanding.</p>
+    </section>
+    <section>
+      <h2>Support functionality</h2>
+      <p>I've chosen not to use the provided starter code, instead opting to base my program on my OpenGL boilerplate that I've been using for graphics classes this year. The repository for this can be found <a href="https://github.com/christetreault/opengl-sandbox.git">on Github</a>. My program allows for an interactive interface; the only command line my program accepts is a filename to open.</p>
+      <pre>./imaging [filename]</pre>
+      <p>My program supports many filetypes thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, and .jpg files that I have tried</p>
+      <p>Once a file is loaded, a window should appear with the image showing. To perform an operation, press Enter. Assuming your window manager is well-behaved, the window should disappear. Unfortunately, it seems that the Mac OS window manager does not respect GLFW's hide window command, so for this reason I request you use the Linux version for grading. Regardless, in the command window, you should see:</p>
+      <pre>Enter a command:</pre>
+      <p>If your window actually hid itself, the command prompt likely has focus. If not, click into it and enter a command and press enter. The command should execute.</p>
+      <h2>help</h2>
+      <p>The first command is <code>help</code>. Press enter and type help at the prompt. You should see a listing similar to the following:</p>
+      <pre>help
+Available commands:
+   undo
+   edgeStrategy wrap/mirror/zero/clamp/random
+   showConfig
+   setUndoHistory [2, infinity]/unlimited
+   save &lt;filename&gt;.&lt;png/bmp&gt;
+   antialiasFilter nearestNeighbor/hat/mitchell
+   grayscale
+   sharpen
+   contrast [-infinity, infinity]
+   spiral [-infinity, infinity] [-infinity, infinity]
+   saturation [-infinity, infinity]
+   gamma [0, infinity]
+   blur [3, 5, 7, ..., min(width, height)]
+   brighten [0, infinity]
+   translate [-width, width] [-height, height]
+   ripple
+   crop [0, width-1] [0, height-1] [1, width-1-x] [1, height-1-y]
+   quantize [1, 8]
+   scale (0 .. infinity] (0 .. infinity]
+   mirror horizontal/vertical/both
+   randomDither [1, 8]
+   floydSteinberg [1, 8]
+   edgeDetect [-infinity, infinity]</pre>
+      <p>For each supported operation, the command to execute is listed, followed by the ranges of each operation. If the word "infinity" appears, that just means that there is no formal upper or lower bound to the argument. I make no promises that you can actually scale your image up to infinity, or that "infinity" is a literal that you can type in have work. Ranges use standard interval notation, so <code>(0, 4]</code> is 1, 2, 3, 4, where 0 is excluded and 4 is included.</p>
+      <h2>showConfig</h2>
+      <p>The program maintains some state. Executing the <code>showConfig</code> command should result in output similar to:</p>
+      <pre>showConfig
+Undo history size limit = 10
+Current undo history size = 1
+Edge handling strategy = mirror
+Antialiasing filter = nearest neighbor</pre>
+      <p>Shown here are the default state values.</p>
+      <h2>undo</h2>
+      <p>I've implemented a simple undo mechanism. Internally, a linked list of Images is maintained, and every new image operation creates a new image, which is pushed into the front of the list. Thus, in order to undo an operation, one just needs to pop the head off the list. The undo history is limited in order to avoid running out of memory.</p>
+      <h2>setUndoHistory</h2>
+      <p>Execute <code>setUndoHistory n</code> where n is a number greater than two to limit the history. Alternately, you can execute <code>setUndoHistory unlimited</code> to remove the limit. If you set the history to a number smaller than the current size of the undo history list, the oldest elements will be removed to bring the history under the size limit. Similarly, if your history grows too large, the oldest element in the list will be removed.</p>
+    </section>
+    <h2>save</h2>
+    <p>To save a file, one simply has to execture the command <code>save filename</code>. This will write a .png file with the given filename to the current directory. You can also force the program to write out a .bmp file by executing <code>save filename.bmp</code>. The image writing library that I am using is <a href="https://github.com/nothings/stb/blob/master/stb_image_write.h">stb_image_write</a>, which is not optimized for small file sizes. Unfortunately, this means that even the .png files produced will have fairly large file sizes. However, given that .png files are written by default, this means that alpha channels are supported by my program, and are generally considered by all the operations.</p>
+    <h2>edgeStrategy</h2>
+    <p>For several operations where one has to do "something reasonable" at the image edges, I've implemented several options. This can be set using this command.</p>
+    <h3>wrap</h3>
+    <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transWrap.png"></div>
+    <p>When in wrap mode, wrap-around behavior is used. For the range [0, 5], if one wants to get 6, they will instead get 0, and if one wants to get -1, they will instead get 5.</p>
+    <h3>mirror</h3>
+    <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transMirror.png"></div>
+    <p>When in mirror mode, mirroring behavior is used. For the range [0, 5], if one wants to get 6, they will instead get 4, and if one wants to get -1, they will instead get 2.</p>
+    <h3>zero</h3>
+    <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transZero.png"></div>
+    <p>When in zero mode, values outside the valid range are not returned. The end result is typically a <code>continue</code> statement inside a sum loop.</p>
+    <h3>clamp</h3>
+    <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transClamp.png"></div>
+    <p>When in clamp mode, values are clamped to the valid range.</p>
+    <h3>mirror</h3>
+    <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transRandom.png"></div>
+    <p>When in random mode, a random value is chosen from the valid range if a value outside the valid range is requested. Focus groups have determined that this behavior is "super useful."</p>
+    <h2>antialiasFilter</h2>
+    <p>The antialias filter to be used by scales and traslations can be set using this command. The three required filters (nearestNeighbor, hat, and mitchell) are all implemented and can be selected by name.</p>
   </body>
 </html>
