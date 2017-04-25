@@ -10,10 +10,12 @@
     <hr>
     <section>
       <h1>Prerequisites</h1>
+      <hr>
       <p>This program has some library prerequisites. Please ensure you have GLFW 3 and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. This version was originally chosen as it is the highest OpenGL version that Mac OSX supports. While it's probably not strictly required for this assignment, my renderer expects this version, and I unfortunately did not have time to refactor for 3.X support.</p>
     </section>
     <section>
       <h1>Support functionality</h1>
+      <hr>
       <p>I've chosen not to use the provided starter code, instead opting to base my program on my OpenGL boilerplate that I've been using for graphics classes this year. The repository for this can be found <a href="https://github.com/christetreault/opengl-sandbox.git">on Github</a>. My program allows for an interactive interface; the only command line my program accepts is a filename to open.</p>
       <pre>./imaging [filename]</pre>
       <p>My program supports many filetypes thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, and .jpg files that I have tried</p>
@@ -83,10 +85,11 @@ Antialiasing filter = nearest neighbor</pre>
     <h2>antialiasFilter</h2>
     <p>The antialias filter to be used by scales and traslations can be set using this command. The three required filters (nearestNeighbor, hat, and mitchell) are all implemented and can be selected by name.</p>
     <h1>Part 1: Basic Operations</h1>
+    <hr>
     <h2>brighten</h2>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 0.5 →<img src="images/brightenHalf.png"></div>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 2.0 →<img src="images/brightenTwo.png"></div>
-    <p>Brighten multiplies each color channel by the given factor. Alpha is ignored.
+    <p>Brighten multiplies each color channel by the given factor. Alpha is ignored.</p>
       <h2>contrast</h2>
       <div class="imageCompare"><img src="images/waveBase.png">→ -1.0 →<img src="images/contrastMinus1.png"></div>
       <div class="imageCompare"><img src="images/waveBase.png">→ 0.5 →<img src="images/contrastHalf.png"></div>
@@ -107,5 +110,32 @@ Antialiasing filter = nearest neighbor</pre>
       <div class="imageCompare"><img src="images/noonooBase.png">→ 84, 63, 84, 63 →<img src="images/cropBottomRight.png"></div>
       <div class="imageCompare"><img src="images/noonooBase.png">→ 42, 63, 84, 63 →<img src="images/cropTheFace.png"></div>
     <p>Crop simply copies the pixels from the requested region of the source image to the destination.</p>
+    <h1>Part 2: Quantization and Dithering</h1>
+    <hr>
+    <h2>quantize</h2>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 4 →<img src="images/quantFour.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 2 →<img src="images/quantTwo.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 1 →<img src="images/quantOne.png"></div>
+    <p>Quantize with the formula c_new = floor(c_old * b) / (b - 1). Alpha is ignored.</p>
+    <h2>randomDither</h2>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 4 →<img src="images/randomDitherFour.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 2 →<img src="images/randomDitherTwo.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 1 →<img src="images/randomDitherOne.png"></div>
+    <p>Apply random dithering with the formula c_new = floor(c_old * r * b) / (b - 1), where r is a random number in the range of [-0.5, 0.5]. c_new is then clamped to the range of [0, 1]. Alpha is ignored.</p>
+    <h2>floydSteinberg</h2>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 4 →<img src="images/fsFour.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 2 →<img src="images/fsTwo.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 1 →<img src="images/fsOne.png"></div>
+    <p>Floyd Steinberg dithering is performed using the error diffusion method described in the assignment writeup, ignoring the alpha channel. For edges, I distribute the error that would be off the edge evenly across the pixels that are not off the edge. The only exception to this is with the bottom row. I decided not to distribute the error that would go down to the rightmost pixel. I was doing this, but it created a bright row on the bottom that I feld did not look correct. For reference, I've included results for distributing on the bottom row. Notice the apparent bright row in the 1 and 2 bit images.</p>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 4 →<img src="images/fsFourWithBot.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 2 →<img src="images/fsTwoWithBot.png"></div>
+    <div class="imageCompare"><img src="images/flower1.bmp">→ 1 →<img src="images/fsOneWithBot.png"></div>
+    <h2>Dithering and Quantization gallery</h2>
+    <p>Here is a gallery of the different quantization and dithering methods for comparison. From left to right are listed: Original, Quantized, Random Dithered, Floyd Steinberg Dithered. From top to bottom are listed 1, 2, 3, 4, and 5 bits.</p>
+    <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantOne.png"><img src="images/noonooRDOne.png"><img src="images/noonooFSOne.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantTwo.png"><img src="images/noonooRDTwo.png"><img src="images/noonooFSTwo.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantThree.png"><img src="images/noonooRDThree.png"><img src="images/noonooFSThree.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantFour.png"><img src="images/noonooRDFour.png"><img src="images/noonooFSFour.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantFive.png"><img src="images/noonooRDFive.png"><img src="images/noonooFSFive.png"></div>
   </body>
 </html>
