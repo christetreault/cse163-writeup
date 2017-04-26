@@ -216,8 +216,53 @@ Antialiasing filter = nearest neighbor</pre>
     <p>Translation has similar orchestration requirements to scale. Fortunately much of the complexity is eliminated since only one possible operation occurs. However, fear not, there is still complictaion here! I've implemented configurable EdgeStrategies here, similar to the convolution functions. Example of translation with different edge strategies can be seen in the Support Functionality section above.</p>
     <p>First, we test if we are translating in both X and Y, or just one or the other. If both, we recursively translate in just X, then translate the result of that in just Y.</p>
     <p>Next, we test if deltaX and deltaY are integers. If they are, we switch to nearest neighbor for those axis. Since nearest neighbor will result in only one iteration, and the function itself is practically a no-op, this is morally the same as having a special case for integer shifting. However, due to this we need separate filterFunctions and widths for X and Y.</p>
-    <p>Next we enter the translation loop in X. For all pixels (a, b), we fix y to be equal to b, and we center the filter over a. We constrain x to the range specified by the EdgeStrategy using a constrain function. The constrain function takes a value, a max value, and an EdgeStrategy, and returns either the original value (if it was in range), or some value in the range of [0, max] based on the given strategy. This function is not super-robust unfortunately. In an ideal world, it'd take a min, and not require min be zero, and I believe it does the wrong thing if you ask for a value more than two times outside the range. User exposure to this issue should be minimized, but users are requested to try not to do that.</p>
+    <p>Next we enter the translation loop in X. For all pixels (a, b), we fix y to be equal to b, and we center the filter over a. We constrain x to the range specified by the EdgeStrategy using a constrain function. The constrain function takes a value, a max value, and an EdgeStrategy, and returns either the original value (if it was in range), or some value in the range of [0, max] based on the given strategy. This function is not super-robust unfortunately. In an ideal world, it'd take a min, and not require min be zero, and I believe it does the wrong thing if you ask for a value more than two times outside the range. User exposure to this issue should be mostly mitigated, but users are requested to try not to do that.</p>
     <p>Regardless of all of that, a mapped X is obtained, and this value is the pixel to be multiplied by the filter weight. A filter weight is calculated using the original x (so if x is -1, but constrain returned 7, -1 is still used to calculate the filter weight), and is multiplied by the pixel. These values are summed up, and divided by the sum of contributions. Finally, this process is repeated in Y, with x being fixed to equal a, and the filter being centered over b.</p>
+    <h1><em>Fun</em></h1>
+    <hr>
+    <p>I've implemented a few extra operations. Some are cooler than others obviously, but they exist regardless, and will all be listed here.</p>
+    <h2>spiral</h2>
+    <p>I maintain an undo history, which is a linked list of every intermediate image between the original and the current, truncated for the history size. I thought it would be fun to find some way to collapse the history into one single image, thus spiral was born.</p>
+    <p>For spiral, I've implemented a scheme, where each image in the undo history is interpolated through, following the path of a logarithmic spiral. The logarithmic spiral is defined as:</p>
+    <pre>r = a * e^(b * θ)</pre>
+    <p>Which gives us the radius out from the origin of the spiral at any given θ. Here, a and b are constants that control what sort of spiral you get. Thus, if you execute the command <code>spiral a b</code> you produce the spiral interpolation of the undo history:</p>
+    <ol>
+      <li>The maximum radius of the spiral <code>rMax = a * e^(b * 2 * π * undoHistory.size())</code> is calculated
+      <li>For all (x, y), shifted so that the top left corner is (-(width-1)/2, (height-1)/2):
+        <ol>
+          <li>(x, y) is converted to polar coordinats (r, θ)</li>
+          <li>we save θ for the current (x, y) pair, mod'ed by the number of images in the history list, then divided by (2 * π). This value should now be in the range of [0 .. 1].</li>
+          <li>we determine where r falls between [0, 1, .., rMax], and save the two boundary indices for the current (x, y) pair. Here, the range is the number of to multiply by θ to get the spirals immediately before and after the current r with the same θ.</li>
+        </ol>
+      <li>The width and height of the head of the history list are saved</li>
+      <li>Each image is resized if it does not have the same width and height of the head. The mitchell filter is used for this</li>
+      <li>For each pixel (x, y) we interpolate between the corresponding pixels of the lower and upper indices determined above by the scaled, mod'ed theta determined above.</li>
+    </ol>
+    <p>After this procedure is complete, you should get images similar to:</p>
+    <div class="imageCompare">
+      <p>saturation 2 → quantize 1 →</p>
+      <p>edgeDetect 255 → spiral .9 .1 →</p>
+      <a href="images/chewysDead.jpg"><img src="images/spiralOneInitThumb.png"></a> → <a href="images/spiralOne.png"><img src="images/spiralOneThumb.png"><a/>
+    </div>
+    <div class="imageCompare">
+      <p>blur 27 → saturation -1 →</p>
+      <p>spiral .9 .1 → spiral -4.5 .2</p>
+      <img src="images/spiralTwoInitThumb.png"> → <a href="images/spiralTwo.png"><img src="images/spiralTwoThumb.png"><a/>
+    </div>
+    <h2>ripple</h2>
+    <p>At first I couldn't get spiral working correctly. It turns out that math was hard, and I'm kind of bad at it. While I couldn't get spiral working correctly, I did get this ripple effect. The beginning process is for ripple is similar to spiral. Convert (x, y) to polar coordinates. However, this time we save theta, and the constant value c such that <code>rCurr = a * e^(b * θCurr * c)</code>.</p>
+    <p>Next, we resize images as before, then for each pixel, we get the spiral at the current theta * the c calculated above, floor it, and mod by the undo history size to get the left interpolant. To get the right, we take the next index. We mod the spiral value used to get the left interpolant by 1 to get the interpolation value. Then we use these to create the resulting pixel.</p>
+    <p>After this procedure is complete, you should get images similar to:</p>
+    <div class="imageCompare">
+      <p>crop 118 124 1300 1800 →</p><p>crop 100 100 1100 1600 →</p>
+      <p>crop 100 100 900 1400 → ripple →</p>
+      <a href="images/chewysDead.jpg"><img src="images/spiralOneInitThumb.png"></a> → <a href="images/rippleOne.png"><img src="images/rippleOneThumb.png"><a/>
+    </div>
+    <div class="imageCompare">
+      <p>blur 27 → saturation -1 →</p>
+      <p>spiral .9 .1 → spiral -4.5 .2</p>
+      <img src="images/rippleTwoInitThumb.png"> → <a href="images/rippleTwo.png"><img src="images/rippleTwoThumb.png"><a/>
+    </div>
     <hr>
     <div class="netscape">
       This site best viewed with Netscape Navigator<br>Download Netscape Now<br><a href="https://www.mozilla.org/en-US/firefox/products/"><img src="images/netscape.png"></a>
