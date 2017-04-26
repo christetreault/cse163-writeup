@@ -153,11 +153,71 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, mirror →<img src="images/blurESMirror.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, clamp →<img src="images/blurESClamp.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, random →<img src="images/blurESRandom.png"></div>
-      The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomutin the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
-    <h2>Blur</h2>
+    <p>The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomutin the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
+    <h2>blur</h2>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 3 →<img src="images/blurThree.png"></div>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 9 →<img src="images/blurNine.png"></div>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 27 →<img src="images/blurTwentySeven.png"></div>
+    <p>Blur convolves the image with the Gaussian filter given in the assignment. This function supports EdgeStrategies.</p>
+    <h2>sharpen</h2>
+    <div class="imageCompare"><img src="images/mandrillBase.png">→<img src="images/sharpenBase.png"></div>
+    <div class="imageCompare"><img src="images/blurThree.png">→<img src="images/sharpenThree.png"></div>
+    <div class="imageCompare"><img src="images/blurNine.png">→<img src="images/sharpenNine.png"></div>
+    <p>Sharpen convolves with the constant 3 x 3 filter given in the assignment writeup. This function supports EdgeStrategies.</p>
+    <h2>edgeDetect</h2>
+    <hr>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ 75 →<img src="images/ed75.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 100 →<img src="images/ed100.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ 255 →<img src="images/ed255.png"></div>
+    <p>Edge Detect directly calls the convolve implementation function. It separately convolves with the horizontal and vertical gradient filters given in the writeup. The getter reads a pixel from the Image, and the setters write the gradient out to separate buffers. For both of these, I use the clamp edge strategy. I picked clamp, as I felt it would be the least likely to create an artificial "edge" along the edges of the image. If we clamp the border pixels, any edges that go to the edge of the image will continue in a straight line out from the edge.</p>
+    <p>After these convolutions are done, I loop over each pixel of the Image. For each pixel, I calculate the luminance of the horizontal and vertical gradients at that point. Then I calculate the composite gradient image magnitude, G,  using the two luminances. Finally, if G is greater than the threshold, I write white out for that pixel, otherwise I output black. For all pixels, alpha is set to fully opaque.</p>
+    <h1>Antialiased Scale and Shift</h1>
+    <hr>
+    <h2>scale</h2>
+    <h3>Scaling up:</h3>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ nearest, 2.11, 1 →<img src="images/upXNN.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ nearest, 1, 2.11 →<img src="images/upYNN.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ nearest, 2.11, 2.11 →<img src="images/upBothNN.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ hat, 2.11, 1 →<img src="images/upXHat.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ hat, 1, 2.11 →<img src="images/upYHat.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ hat, 2.11, 2.11 →<img src="images/upBothHat.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ mitchell, 2.11, 1 →<img src="images/upXMit.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ mitchell, 1, 2.11 →<img src="images/upYMit.png"></div>
+    <div class="imageCompare"><img src="images/scaleUp.bmp">→ mitchell, 2.11, 2.11 →<img src="images/upBothMit.png"></div>
+    <h3>Scaling down:</h3>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ nearest, 0.49, 1 →<img src="images/downXNN.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ nearest, 1, 0.49 →<img src="images/downYNN.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ nearest, 0.49, 0.49 →<img src="images/downBothNN.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ hat, 0.49, 1 →<img src="images/downXHat.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ hat, 1, 0.49 →<img src="images/downYHat.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ hat, 0.49, 0.49 →<img src="images/downBothHat.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ mitchell, 0.49, 1 →<img src="images/downXMit.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ mitchell, 1, 0.49 →<img src="images/downYMit.png"></div>
+    <div class="imageCompare"><img src="images/scaleDown.bmp">→ mitchell, 0.49, 0.49 →<img src="images/downBothMit.png"></div>
+    <p>I've combined minification and magnification into a single function. There is a good amount of orchestration going on here:</p>
+      <ul>
+        <li>There are three functions that implement the hat, nearest neighbor, and mitchell filters:
+          <ul>
+            <li>hat and mitchell are implemented as given in the assignment writeup</li>
+            <li>nearest neighbor just returns 1. The idea here is that nearest neighbor has a width of 1, so it should only ever get called one time in a loop</li>
+          </ul>
+        </li>
+        <li>There is a function that takes an AntialiasFilter enumeration value (described in the Support functionality section above), and returns the correct filter function, as well as the filter width of that function. 3 is returned for hat, 5 is returned for mitchell, and 1 is returned for nearest neighbor</li>
+        <li>There is a minify function that generates the argument to the filter function for minimization</li>
+        <li>There is a magnify function that generates the argument to the filter function for magnification</li>
+      </ul>
+    <p>First, the function determines if scaling is occuring in just one, or both axis. If both, it recursively scales just in X, then scales the result of that just in Y.</p>
+    <p>Once scaling has begun, the correct filterWidth and filter function are obtained, as well as the correct argument function is determined by examining the scale factor. If the factor is less than zero, minify is selected, otherwise magnify is selected.</p>
+    <p>Next each pixel is scaled in X. For each pixel (a, b), y is fixed to equal b. Then the filter is centered on a using the filter width returned by the filter selection function. For each pixel under the filter, the pixel is multiplied by the result of the filter function. As these weights do not add up to one, the resulting pixel is divided by the sum of the weights. Finally, this process is repeated in the Y direction, with x being fixed to equal a, and the filter being centered on b.</p>
+    <h2>translate</h2>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ nearest, 20.5, 20.5 →<img src="images/transNN.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ hat, 20.5, 20.5 →<img src="images/transHat.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ mitchell, 20.5, 20.5 →<img src="images/transMit.png"></div>
+    <p>Translation has similar orchestration requirements to scale. Fortunately much of the complexity is eliminated since only one possible operation occurs. However, fear not, there is still complictaion here! I've implemented configurable EdgeStrategies here, similar to the convolution functions. Example of translation with different edge strategies can be seen in the Support Functionality section above.</p>
+    <p>First, we test if we are translating in both X and Y, or just one or the other. If both, we recursively translate in just X, then translate the result of that in just Y.</p>
+    <p>Next, we test if deltaX and deltaY are integers. If they are, we switch to nearest neighbor for those axis. Since nearest neighbor will result in only one iteration, and the function itself is practically a no-op, this is morally the same as having a special case for integer shifting. However, due to this we need separate filterFunctions and widths for X and Y.</p>
+    <p>Next we enter the translation loop in X. For all pixels (a, b), we fix y to be equal to b, and we center the filter over a. We constrain x to the range specified by the EdgeStrategy using a constrain function. The constrain function takes a value, a max value, and an EdgeStrategy, and returns either the original value (if it was in range), or some value in the range of [0, max] based on the given strategy. This function is not super-robust unfortunately. In an ideal world, it'd take a min, and not require min be zero, and I believe it does the wrong thing if you ask for a value more than two times outside the range. User exposure to this issue should be minimized, but users are requested to try not to do that.</p>
+    <p>Regardless of all of that, a mapped X is obtained, and this value is the pixel to be multiplied by the filter weight. A filter weight is calculated using the original x (so if x is -1, but constrain returned 7, -1 is still used to calculate the filter weight), and is multiplied by the pixel. These values are summed up, and divided by the sum of contributions. Finally, this process is repeated in Y, with x being fixed to equal a, and the filter being centered over b.</p>
     <hr>
     <div class="netscape">
       This site best viewed with Netscape Navigator<br>Download Netscape Now<br><a href="https://www.mozilla.org/en-US/firefox/products/"><img src="images/netscape.png"></a>
