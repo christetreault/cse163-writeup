@@ -137,5 +137,30 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantThree.png"><img src="images/noonooRDThree.png"><img src="images/noonooFSThree.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantFour.png"><img src="images/noonooRDFour.png"><img src="images/noonooFSFour.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png"><img src="images/noonooQuantFive.png"><img src="images/noonooRDFive.png"><img src="images/noonooFSFive.png"></div>
+    <h1>Basic Convolution and Edge Detection</h1>
+    <hr>
+    <h2>Convolution</h2>
+    <p>For this portion of the assignment, I've implemented a generic convolve function. The genral scheme is:</p>
+    <ol>
+      <li>Precompute the N x N filter table</li>
+      <li>Create a lambda function to read a pixel from wherever</li>
+      <li>Create a lambda to write a convolved pixel out</li>
+      <li>Call the convolve implementation which applies the filter table to each pixel returned by the read function, then writes the pixel using the write function.</li>
+    </ol>
+    <p>The convolve function also takes an EdgeStrategy (See Support Functionality above) to tell it what to do at edges. Here are some examples of blurring with the different edge strategies:</p>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ 27, zero →<img src="images/blurESZero.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ 27, wrap →<img src="images/blurESWrap.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ 27, mirror →<img src="images/blurESMirror.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ 27, clamp →<img src="images/blurESClamp.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ 27, random →<img src="images/blurESRandom.png"></div>
+      The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomutin the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
+    <h2>Blur</h2>
+    <div class="imageCompare"><img src="images/mandrillBase.png">→ 3 →<img src="images/blurThree.png"></div>
+    <div class="imageCompare"><img src="images/mandrillBase.png">→ 9 →<img src="images/blurNine.png"></div>
+    <div class="imageCompare"><img src="images/mandrillBase.png">→ 27 →<img src="images/blurTwentySeven.png"></div>
+    <hr>
+    <div class="netscape">
+      This site best viewed with Netscape Navigator<br>Download Netscape Now<br><a href="https://www.mozilla.org/en-US/firefox/products/"><img src="images/netscape.png"></a>
+    </div>
   </body>
 </html>

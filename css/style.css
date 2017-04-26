@@ -32,3 +32,11 @@ div.imageCompare {
 div.imageCompare > img {
     margin: 0em 1em 0em 1em;
 }
+
+div.netscape {
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+    color: #4c4c7a;
+    background-color: white;
+}
