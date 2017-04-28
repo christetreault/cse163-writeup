@@ -22,19 +22,20 @@ code {
 }
 
 div.imageCompare {
-    width: 50%;
-    margin: 0 auto;
+    width: 90%;
+    margin: 0.25em auto;
     text-align: center;
     font-size: xx-large;
     font-weight: bold;
+    background-color: #60606060;
 }
 
 div.imageCompare > img {
-    margin: 0em 1em 0em 1em;
+    margin: 0.25em 1em 0em 1em;
 }
 
 div.netscape {
-    width: 50%;
+    width: 30%;
     margin: 0 auto;
     text-align: center;
     color: #4c4c7a;

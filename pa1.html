@@ -9,6 +9,9 @@
     <h1>PA1: Image and Signal Processing</h1>
     <hr>
     <section>
+      <h1>Downloads</h1>
+      <hr>
+      <p><a href="imagingLinux.zip">Linux Binary</a> - Compiled with GCC on the current Ubuntu LTS (16.04)</p>
       <h1>Prerequisites</h1>
       <hr>
       <p>This program has some library prerequisites. Please ensure you have GLFW 3 and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. This version was originally chosen as it is the highest OpenGL version that Mac OSX supports. While it's probably not strictly required for this assignment, my renderer expects this version, and I unfortunately did not have time to refactor for 3.X support.</p>
@@ -18,7 +21,7 @@
       <hr>
       <p>I've chosen not to use the provided starter code, instead opting to base my program on my OpenGL boilerplate that I've been using for graphics classes this year. The repository for this can be found <a href="https://github.com/christetreault/opengl-sandbox.git">on Github</a>. My program allows for an interactive interface; the only command line my program accepts is a filename to open.</p>
       <pre>./imaging [filename]</pre>
-      <p>My program supports many filetypes thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, and .jpg files that I have tried</p>
+      <p>My program supports many filetypes thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, .gif, or .jpg file that I have tried</p>
       <p>Once a file is loaded, a window should appear with the image showing. To perform an operation, press Enter. Assuming your window manager is well-behaved, the window should disappear. Unfortunately, it seems that the Mac OS window manager does not respect GLFW's hide window command, so for this reason I request you use the Linux version for grading. Regardless, in the command window, you should see:</p>
       <pre>Enter a command:</pre>
       <p>If your window actually hid itself, the command prompt likely has focus. If not, click into it and enter a command and press enter. The command should execute. If any of the parameters are out of the specified range, the help message for that command will be shown and the command will not proceed.</p>
@@ -64,7 +67,7 @@ Antialiasing filter = nearest neighbor</pre>
       <p>Execute <code>setUndoHistory n</code> where n is a number greater than two to limit the history. Alternately, you can execute <code>setUndoHistory unlimited</code> to remove the limit. If you set the history to a number smaller than the current size of the undo history list, the oldest elements will be removed to bring the history under the size limit. Similarly, if your history grows too large, the oldest element in the list will be removed.</p>
     </section>
     <h2>save</h2>
-    <p>To save a file, one simply has to execture the command <code>save filename</code>. This will write a .png file with the given filename to the current directory. You can also force the program to write out a .bmp file by executing <code>save filename.bmp</code>. The image writing library that I am using is <a href="https://github.com/nothings/stb/blob/master/stb_image_write.h">stb_image_write</a>, which is not optimized for small file sizes. Unfortunately, this means that even the .png files produced will have fairly large file sizes. However, given that .png files are written by default, this means that alpha channels are supported by my program, and are generally considered by all the operations.</p>
+    <p>To save a file, one simply has to execture the command <code>save filename</code>. This will write a .png file with the given filename to the current directory. You can also force the program to write out a .bmp file by executing <code>save filename.bmp</code>. The image writing library that I am using is <a href="https://github.com/nothings/stb/blob/master/stb_image_write.h">stb_image_write</a>, which is not optimized for small file sizes. Unfortunately, this means that even the .png files produced will have fairly large file sizes. However, given that .png files are written by default, this means that alpha channels are supported by my program, and are handled by many of the operations.</p>
     <h2>edgeStrategy</h2>
     <p>For several operations where one has to do "something reasonable" at the image edges, I've implemented several options. This can be set using this command.</p>
     <h3>wrap</h3>
@@ -79,7 +82,7 @@ Antialiasing filter = nearest neighbor</pre>
     <h3>clamp</h3>
     <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transClamp.png"></div>
     <p>When in clamp mode, values are clamped to the valid range.</p>
-    <h3>mirror</h3>
+    <h3>random</h3>
     <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transRandom.png"></div>
     <p>When in random mode, a random value is chosen from the valid range if a value outside the valid range is requested. Focus groups have determined that this behavior is "super useful."</p>
     <h2>antialiasFilter</h2>
@@ -126,7 +129,7 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 4 →<img src="images/fsFour.png"></div>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 2 →<img src="images/fsTwo.png"></div>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 1 →<img src="images/fsOne.png"></div>
-    <p>Floyd Steinberg dithering is performed using the error diffusion method described in the assignment writeup, ignoring the alpha channel. For edges, I distribute the error that would be off the edge evenly across the pixels that are not off the edge. The only exception to this is with the bottom row. I decided not to distribute the error that would go down to the rightmost pixel. I was doing this, but it created a bright row on the bottom that I feld did not look correct. For reference, I've included results for distributing on the bottom row. Notice the apparent bright row in the 1 and 2 bit images.</p>
+    <p>Floyd Steinberg dithering is performed using the error diffusion method described in the assignment writeup, ignoring the alpha channel. For edges, I distribute the error that would be off the edge evenly across the pixels that are not off the edge. The only exception to this is with the bottom row. I decided not to distribute the error that would go down to the rightmost pixel. I was doing this, but it created a bright row on the bottom that I felt did not look correct. For reference, I've included results for distributing on the bottom row. Notice the apparent bright row in the 1 and 2 bit images.</p>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 4 →<img src="images/fsFourWithBot.png"></div>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 2 →<img src="images/fsTwoWithBot.png"></div>
     <div class="imageCompare"><img src="images/flower1.bmp">→ 1 →<img src="images/fsOneWithBot.png"></div>
@@ -153,7 +156,7 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, mirror →<img src="images/blurESMirror.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, clamp →<img src="images/blurESClamp.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, random →<img src="images/blurESRandom.png"></div>
-    <p>The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomutin the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
+    <p>The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomuting the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
     <h2>blur</h2>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 3 →<img src="images/blurThree.png"></div>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 9 →<img src="images/blurNine.png"></div>
@@ -165,7 +168,6 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/blurNine.png">→<img src="images/sharpenNine.png"></div>
     <p>Sharpen convolves with the constant 3 x 3 filter given in the assignment writeup. This function supports EdgeStrategies.</p>
     <h2>edgeDetect</h2>
-    <hr>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 75 →<img src="images/ed75.png"></div>
       <div class="imageCompare"><img src="images/noonooBase.png">→ 100 →<img src="images/ed100.png"></div>
       <div class="imageCompare"><img src="images/noonooBase.png">→ 255 →<img src="images/ed255.png"></div>
@@ -235,7 +237,7 @@ Antialiasing filter = nearest neighbor</pre>
           <li>we determine where r falls between [0, 1, .., rMax], and save the two boundary indices for the current (x, y) pair. Here, the range is the number of to multiply by θ to get the spirals immediately before and after the current r with the same θ.</li>
         </ol>
       <li>The width and height of the head of the history list are saved</li>
-      <li>Each image is resized if it does not have the same width and height of the head. The mitchell filter is used for this</li>
+      <li>Each image is resized if it does not have the same width and height of the head. The mitchell filter is used for this. This step is potentially very slow, since we may be resizing every image in the undo history by a large amount in the worst case.</li>
       <li>For each pixel (x, y) we interpolate between the corresponding pixels of the lower and upper indices determined above by the scaled, mod'ed theta determined above.</li>
     </ol>
     <p>After this procedure is complete, you should get images similar to:</p>
@@ -246,7 +248,7 @@ Antialiasing filter = nearest neighbor</pre>
     </div>
     <div class="imageCompare">
       <p>blur 27 → saturation -1 →</p>
-      <p>spiral .9 .1 → spiral -4.5 .2</p>
+      <p>spiral -4.5 .2</p>
       <img src="images/spiralTwoInitThumb.png"> → <a href="images/spiralTwo.png"><img src="images/spiralTwoThumb.png"><a/>
     </div>
     <h2>ripple</h2>
@@ -259,10 +261,18 @@ Antialiasing filter = nearest neighbor</pre>
       <a href="images/chewysDead.jpg"><img src="images/spiralOneInitThumb.png"></a> → <a href="images/rippleOne.png"><img src="images/rippleOneThumb.png"><a/>
     </div>
     <div class="imageCompare">
-      <p>blur 27 → saturation -1 →</p>
-      <p>spiral .9 .1 → spiral -4.5 .2</p>
+      <p>saturation 2 → saturation -1 →</p>
+      <p>randomDither 1 → ripple</p>
       <img src="images/rippleTwoInitThumb.png"> → <a href="images/rippleTwo.png"><img src="images/rippleTwoThumb.png"><a/>
     </div>
+    <h2>mirror</h2>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ horzontal →<img src="images/mirrorHorz.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ vertical →<img src="images/mirrorVert.png"></div>
+      <div class="imageCompare"><img src="images/noonooBase.png">→ both →<img src="images/mirrorBoth.png"></div>
+    <p>Mirroring of images was a happy side-effect of having implemented configurable edge handling. It turns out that if you translate an image by it's entire width, height, or width and height using the mirror EdgeStrategy, you get a full mirroring of the image. I wonder what other neat effects I could accomplish using my EdgeStrategy's and existing operations?</p>
+    <h2>grayscale</h2>
+    <div class="imageCompare"><img src="images/mandrillBase.png"> → <img src="images/mandrillGS.png"></div>
+    <p>And finally, last but <s>not</s> least, we have grayscale. Implementation of convering an image to grayscale was nessesary for saturation. Given that it exists, I figured I might as well clean it up and expose it to the user. Currently, the r, g, and b channels are just duplicated. A smart implementation would reduce the number of color channels to just 2, with the second being used for alpha.</p>
     <hr>
     <div class="netscape">
       This site best viewed with Netscape Navigator<br>Download Netscape Now<br><a href="https://www.mozilla.org/en-US/firefox/products/"><img src="images/netscape.png"></a>
