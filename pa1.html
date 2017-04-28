@@ -12,16 +12,18 @@
       <h1>Downloads</h1>
       <hr>
       <p><a href="imagingLinux.zip">Linux Binary</a> - Compiled with GCC 5.4.0 on the current Ubuntu LTS (16.04). Tested with an NVidia Geforce GTX 750 TI</p>
+      <p><a href="imagingMac.zip">Mac OSX Binary</a> - Compiled with Clang 800.0.42.1 on Mac OSX El Capitan. Tested on a MacBook (Retina, 12-inch, Early 2015) with Intel HD Graphics 5300.</p>
       <h1>Prerequisites</h1>
       <hr>
       <p>This program has some library prerequisites. Please ensure you have GLFW 3 and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. This version was originally chosen as it is the highest OpenGL version that Mac OSX supports. While it's probably not strictly required for this assignment, my renderer expects this version, and I unfortunately did not have time to refactor for 3.X support.</p>
+      <p>To run the program, download the appropriate binary (I recommend the Linux binary, due to the window manager issues mentioned above), and unzip it. From the command line, change to the directory you unzipped the binary into and execute <code>./imaging [image file name]</code></p>
     </section>
     <section>
       <h1>Support functionality</h1>
       <hr>
       <p>I've chosen not to use the provided starter code, instead opting to base my program on my OpenGL boilerplate that I've been using for graphics classes this year. The repository for this can be found <a href="https://github.com/christetreault/opengl-sandbox.git">on Github</a>. My program allows for an interactive interface; the only command line my program accepts is a filename to open.</p>
       <pre>./imaging [filename]</pre>
-      <p>My program supports many filetypes thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, .gif, or .jpg file that I have tried</p>
+      <p>My program supports many file types thanks to the image loading library <a href="https://github.com/nothings/stb/blob/master/stb_image.h">stb_image</a> that I am using. Specifically, all the provided images load, as well as any random .png, .bmp, .gif, or .jpg file that I have tried</p>
       <p>Once a file is loaded, a window should appear with the image showing. To perform an operation, press Enter. Assuming your window manager is well-behaved, the window should disappear. Unfortunately, it seems that the Mac OS window manager does not respect GLFW's hide window command, so for this reason I request you use the Linux version for grading. Regardless, in the command window, you should see:</p>
       <pre>Enter a command:</pre>
       <p>If your window actually hid itself, the command prompt likely has focus. If not, click into it and enter a command and press enter. The command should execute. If any of the parameters are out of the specified range, the help message for that command will be shown and the command will not proceed.</p>
@@ -67,7 +69,7 @@ Antialiasing filter = nearest neighbor</pre>
       <p>Execute <code>setUndoHistory n</code> where n is a number greater than two to limit the history. Alternately, you can execute <code>setUndoHistory unlimited</code> to remove the limit. If you set the history to a number smaller than the current size of the undo history list, the oldest elements will be removed to bring the history under the size limit. Similarly, if your history grows too large, the oldest element in the list will be removed.</p>
     </section>
     <h2>save</h2>
-    <p>To save a file, one simply has to execture the command <code>save filename</code>. This will write a .png file with the given filename to the current directory. You can also force the program to write out a .bmp file by executing <code>save filename.bmp</code>. The image writing library that I am using is <a href="https://github.com/nothings/stb/blob/master/stb_image_write.h">stb_image_write</a>, which is not optimized for small file sizes. Unfortunately, this means that even the .png files produced will have fairly large file sizes. However, given that .png files are written by default, this means that alpha channels are supported by my program, and are handled by many of the operations.</p>
+    <p>To save a file, one simply has to execute the command <code>save filename</code>. This will write a .png file with the given filename to the current directory. You can also force the program to write out a .bmp file by executing <code>save filename.bmp</code>. The image writing library that I am using is <a href="https://github.com/nothings/stb/blob/master/stb_image_write.h">stb_image_write</a>, which is not optimized for small file sizes. Unfortunately, this means that even the .png files produced will have fairly large file sizes. However, given that .png files are written by default, this means that alpha channels are supported by my program, and are handled by many of the operations.</p>
     <h2>edgeStrategy</h2>
     <p>For several operations where one has to do "something reasonable" at the image edges, I've implemented several options. This can be set using this command.</p>
     <h3>wrap</h3>
@@ -86,7 +88,7 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/flower1.bmp">→<img src="images/transRandom.png"></div>
     <p>When in random mode, a random value is chosen from the valid range if a value outside the valid range is requested. Focus groups have determined that this behavior is "super useful."</p>
     <h2>antialiasFilter</h2>
-    <p>The antialias filter to be used by scales and traslations can be set using this command. The three required filters (nearestNeighbor, hat, and mitchell) are all implemented and can be selected by name.</p>
+    <p>The antialias filter to be used by scales and translations can be set using this command. The three required filters (nearestNeighbor, hat, and mitchell) are all implemented and can be selected by name.</p>
     <h1>Part 1: Basic Operations</h1>
     <hr>
     <h2>brighten</h2>
@@ -143,7 +145,7 @@ Antialiasing filter = nearest neighbor</pre>
     <h1>Basic Convolution and Edge Detection</h1>
     <hr>
     <h2>Convolution</h2>
-    <p>For this portion of the assignment, I've implemented a generic convolve function. The genral scheme is:</p>
+    <p>For this portion of the assignment, I've implemented a generic convolve function. The general scheme is:</p>
     <ol>
       <li>Precompute the N x N filter table</li>
       <li>Create a lambda function to read a pixel from wherever</li>
@@ -156,7 +158,7 @@ Antialiasing filter = nearest neighbor</pre>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, mirror →<img src="images/blurESMirror.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, clamp →<img src="images/blurESClamp.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ 27, random →<img src="images/blurESRandom.png"></div>
-    <p>The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomuting the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
+    <p>The main convolve implementation function is implemented as a C++ template function, however there are a few Image class methods that further wrap this to support precomputing the filter table from a filter function. These class member functions provide getters and setters that read from the pixel buffer, and write to the pixel buffer.</p>
     <h2>blur</h2>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 3 →<img src="images/blurThree.png"></div>
     <div class="imageCompare"><img src="images/mandrillBase.png">→ 9 →<img src="images/blurNine.png"></div>
@@ -208,14 +210,14 @@ Antialiasing filter = nearest neighbor</pre>
         <li>There is a minify function that generates the argument to the filter function for minimization</li>
         <li>There is a magnify function that generates the argument to the filter function for magnification</li>
       </ul>
-    <p>First, the function determines if scaling is occuring in just one, or both axis. If both, it recursively scales just in X, then scales the result of that just in Y.</p>
+    <p>First, the function determines if scaling is occurring in just one, or both axis. If both, it recursively scales just in X, then scales the result of that just in Y.</p>
     <p>Once scaling has begun, the correct filterWidth and filter function are obtained, as well as the correct argument function is determined by examining the scale factor. If the factor is less than zero, minify is selected, otherwise magnify is selected.</p>
     <p>Next each pixel is scaled in X. For each pixel (a, b), y is fixed to equal b. Then the filter is centered on a using the filter width returned by the filter selection function. For each pixel under the filter, the pixel is multiplied by the result of the filter function. As these weights do not add up to one, the resulting pixel is divided by the sum of the weights. Finally, this process is repeated in the Y direction, with x being fixed to equal a, and the filter being centered on b.</p>
     <h2>translate</h2>
     <div class="imageCompare"><img src="images/noonooBase.png">→ nearest, 20.5, 20.5 →<img src="images/transNN.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ hat, 20.5, 20.5 →<img src="images/transHat.png"></div>
     <div class="imageCompare"><img src="images/noonooBase.png">→ mitchell, 20.5, 20.5 →<img src="images/transMit.png"></div>
-    <p>Translation has similar orchestration requirements to scale. Fortunately much of the complexity is eliminated since only one possible operation occurs. However, fear not, there is still complictaion here! I've implemented configurable EdgeStrategies here, similar to the convolution functions. Example of translation with different edge strategies can be seen in the Support Functionality section above.</p>
+    <p>Translation has similar orchestration requirements to scale. Fortunately much of the complexity is eliminated since only one possible operation occurs. However, fear not, there is still complication here! I've implemented configurable EdgeStrategies here, similar to the convolution functions. Example of translation with different edge strategies can be seen in the Support Functionality section above.</p>
     <p>First, we test if we are translating in both X and Y, or just one or the other. If both, we recursively translate in just X, then translate the result of that in just Y.</p>
     <p>Next, we test if deltaX and deltaY are integers. If they are, we switch to nearest neighbor for those axis. Since nearest neighbor will result in only one iteration, and the function itself is practically a no-op, this is morally the same as having a special case for integer shifting. However, due to this we need separate filterFunctions and widths for X and Y.</p>
     <p>Next we enter the translation loop in X. For all pixels (a, b), we fix y to be equal to b, and we center the filter over a. We constrain x to the range specified by the EdgeStrategy using a constrain function. The constrain function takes a value, a max value, and an EdgeStrategy, and returns either the original value (if it was in range), or some value in the range of [0, max] based on the given strategy. This function is not super-robust unfortunately. In an ideal world, it'd take a min, and not require min be zero, and I believe it does the wrong thing if you ask for a value more than two times outside the range. User exposure to this issue should be mostly mitigated, but users are requested to try not to do that.</p>
@@ -232,7 +234,7 @@ Antialiasing filter = nearest neighbor</pre>
       <li>The maximum radius of the spiral <code>rMax = a * e^(b * 2 * π * undoHistory.size())</code> is calculated
       <li>For all (x, y), shifted so that the top left corner is (-(width-1)/2, (height-1)/2):
         <ol>
-          <li>(x, y) is converted to polar coordinats (r, θ)</li>
+          <li>(x, y) is converted to polar coordinates (r, θ)</li>
           <li>we save θ for the current (x, y) pair, mod'ed by the number of images in the history list, then divided by (2 * π). This value should now be in the range of [0 .. 1].</li>
           <li>we determine where r falls between [0, 1, .., rMax], and save the two boundary indices for the current (x, y) pair. Here, the range is the number of to multiply by θ to get the spirals immediately before and after the current r with the same θ.</li>
         </ol>
@@ -266,13 +268,13 @@ Antialiasing filter = nearest neighbor</pre>
       <img src="images/rippleTwoInitThumb.png"> → <a href="images/rippleTwo.png"><img src="images/rippleTwoThumb.png"><a/>
     </div>
     <h2>mirror</h2>
-    <div class="imageCompare"><img src="images/noonooBase.png">→ horzontal →<img src="images/mirrorHorz.png"></div>
+    <div class="imageCompare"><img src="images/noonooBase.png">→ horizontal →<img src="images/mirrorHorz.png"></div>
       <div class="imageCompare"><img src="images/noonooBase.png">→ vertical →<img src="images/mirrorVert.png"></div>
       <div class="imageCompare"><img src="images/noonooBase.png">→ both →<img src="images/mirrorBoth.png"></div>
     <p>Mirroring of images was a happy side-effect of having implemented configurable edge handling. It turns out that if you translate an image by it's entire width, height, or width and height using the mirror EdgeStrategy, you get a full mirroring of the image. I wonder what other neat effects I could accomplish using my EdgeStrategy's and existing operations?</p>
     <h2>grayscale</h2>
     <div class="imageCompare"><img src="images/mandrillBase.png"> → <img src="images/mandrillGS.png"></div>
-    <p>And finally, last but <s>not</s> least, we have grayscale. Implementation of convering an image to grayscale was nessesary for saturation. Given that it exists, I figured I might as well clean it up and expose it to the user. Currently, the r, g, and b channels are just duplicated. A smart implementation would reduce the number of color channels to just 2, with the second being used for alpha.</p>
+    <p>And finally, last but <s>not</s> least, we have grayscale. Implementation of converting an image to grayscale was nessesary for saturation. Given that it exists, I figured I might as well clean it up and expose it to the user. Currently, the r, g, and b channels are just duplicated. A smart implementation would reduce the number of color channels to just 2, with the second being used for alpha.</p>
     <hr>
     <div class="netscape">
       This site best viewed with Netscape Navigator<br>Download Netscape Now<br><a href="https://www.mozilla.org/en-US/firefox/products/"><img src="images/netscape.png"></a>
