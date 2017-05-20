@@ -14,7 +14,7 @@
       <p><a href="model.zip">Linux Binary</a> - Compiled with GCC 5.4.0 on the current Ubuntu LTS (16.04). Tested with an NVidia Geforce GTX 750 TI</p>
       <h1>Prerequisites</h1>
       <hr>
-      <p>This program has some library prerequisites. Please ensure you have GLFW 3, Assimp and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. Assimp is used for model file import only, and the only preprocessing option I used was <code>aiProcess_JoinIdenticalVertices</code> which deduplicates vertices. It was put out that it is acceptable to use Assimp so long as no preprocessing was used. Unfortunately, it turns out that Assimp actually creates duplicate vertices so that every face has 3 "unique" verices if you do not pass in this option. Given that the .off files provided specify indexed face sets, I assume that <code>aiProcess_JoinIdenticalVertices</code> should do nothing, and is fine.</p>
+      <p>This program has some library prerequisites. Please ensure you have GLFW 3, Assimp and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. Assimp is used for model file import only, and the only preprocessing option I used was <code>aiProcess_JoinIdenticalVertices</code> which deduplicates vertices. It was put out that it is acceptable to use Assimp so long as no preprocessing was used. Unfortunately, it turns out that Assimp actually creates duplicate vertices so that every face has 3 "unique" vertices if you do not pass in this option. Given that the .off files provided specify indexed face sets, I assume that <code>aiProcess_JoinIdenticalVertices</code> should do nothing, and is fine.</p>
     </section>
     <section>
       <h1>Usage</h1>
@@ -24,14 +24,14 @@
         [enter]
         bunny.off
         [enter]</pre>
-      <p>After a bit of loading, you should see the bunny model with some fancy disco lighting. I've provided with this distribution the model files that were provided for testing. Since I'm using Assimp for model load, my program should support most standard model formats. Memory usage is a bit tight, so I reccommend against loading huge model files. For instance, the "Stanford Thai Statue" model loads successfully in my program, however causes swapping on my machine, rendering the system largely unusable. However, the largest model provided by course staff, armadillo.off, loads and simplifies with no issues.</p>
+      <p>After a bit of loading, you should see the bunny model with some fancy disco lighting. I've provided with this distribution the model files that were provided for testing. Since I'm using Assimp for model load, my program should support most standard model formats. Memory usage is a bit tight, so I recommend against loading huge model files. For instance, the "Stanford Thai Statue" model loads successfully in my program, however causes swapping on my machine, rendering the system largely unusable. However, the largest model provided by course staff, armadillo.off, loads and simplifies with no issues.</p>
       <h2>Control Modes</h2>
       <p>There are three control modes for the model viewer. Camera, Rotation, and Translation. By default, the control mode is in Camera. The camera rotates about <0, 0, 0>, and the left and right arrow keys control horizontal movement. The up and down arrow keys control vertical movement. Finally, Page Up translates the camera towards the origin, and Page Up translates the camera away.</p>
       <p>If you press t, you'll enter translation mode. Here, Up and Down translate the model in the y axis, Left and Right translate the model in the x axis, and Page Up and Page Down translate in the z axis. The Object is translated in camera space, so the object will always move up/down, left/right, and towards/away from the camera, and not relative to world space. You can press t to toggle translate mode off and reenter camera mode</p>
       <p>If you press r, you'll enter rotation mode. Left/Right rotates about the y axis. Up/Down rotates about the x axis. Page Up/Page Down rotates about the x axis. Press r again to reenter camera mode.</p>
       <p>All together, these three control modes should allow the user to position the object and camera to view any angle needed.</p>
       <h2>Display Modes</h2>
-      <p>The model by default is shown with phong shading and filled triangles. There are three direction lights positioned at the three points of a triangle pointed at the origin: one red, one gree, and one blue. These lights are initially static. If the user presses l, the lights will begin to rotate counterclockwise. If the user presses l again, they will change to rotating clockwise. If the user presses l again, they will stop in their current position. This cycle can be repeated.</p>
+      <p>The model by default is shown with phong shading and filled triangles. There are three direction lights positioned at the three points of a triangle pointed at the origin: one red, one green, and one blue. These lights are initially static. If the user presses l, the lights will begin to rotate counterclockwise. If the user presses l again, they will change to rotating clockwise. If the user presses l again, they will stop in their current position. This cycle can be repeated.</p>
       <p>It can be helpful to view collapses using the model wireframe. This can be accomplished by pressing w. Pressing w will show the wireframe with the current coloring configuration. Pressing w again will transition back to filled triangles.</p>
       <p>Finally, one aspect of mesh decimation is ensuring that all the data remains consistent in the reduced model. One major part of this are the normal vectors of each vertex. If the user presses n, the model will be colored using its normals. If all is well, the right side of the model should be red, the top should be green, and the front should be blue. This coloring should remain correct if the model is rotated or translated. Press n again to return to phong shaded coloring.</p>
       <h2>Decimation Controls</h2>
@@ -43,10 +43,10 @@
       <p>If normal coloring is being drawn, phong shading will be enabled. Most vertices will maintain their current coloring, but vertices that will be affected by the next collapse will change. The two vertices that will be collapsed will both be colored white. Every vertex adjacent to the first vertex of the collapse will be colored red. Every vertex adjacent to the second vertex of the collapse will be colored blue. Any vertex that is adjacent to both will get both colors, and will end up being colored magenta. In this way, you can preview a collapse prior to executing and convince yourself that it is or isn't correct.</p>
       <h2>Other Keybinds</h2>
       <p>To exit the program, the user can press esc. Of course, using the window manager provided close button works also.</p>
-      <p>If the user presses v, they will enter Verbose Mode. In verbose mode, each collapse or expansion will perform <em>extensive</em> validation. At the very least, at the beginning and end of the collapse or expansion, every vertex, face, and collapse will be validated. Some intermediate validation happens as well. All of this will be printed to stderr, and this is <em>very slow</em>. I strongly reccommend that you do not use this option in conjunction with any number key higher than 1, you will be sitting there for a long time.</p>
+      <p>If the user presses v, they will enter Verbose Mode. In verbose mode, each collapse or expansion will perform <em>extensive</em> validation. At the very least, at the beginning and end of the collapse or expansion, every vertex, face, and collapse will be validated. Some intermediate validation happens as well. All of this will be printed to stderr, and this is <em>very slow</em>. I strongly recommend that you do not use this option in conjunction with any number key higher than 1, you will be sitting there for a long time.</p>
       <div class="imageCompare"><img src="images/pa2/itsThatBad.png"></div>
       <p>In the pre/post validation passes each vertex, face, and collapse are asserted to be correct, based on various metrics. So if you enable verbose mode, and collapse or expand an edge, and the program <em>doesn't</em> crash, then everything was fine.</p>
-      <p>Like most interactive 3D applications, my program has a running timer. A deltaT derived from this timer is used throughout the frame-by-frame update logic, and the user can control a multiplier of this deltaT. You can press , to increas or . to decrease (&lt; and &gt; conceptually) the multiplier. This tends to speed up and slow down "things that are smooth". Some useful side effects of this are: the lights will rotate faster, rotations and translations of the model/camera will be faster, and most importantly the geomorph will proceed faster or slower. By default the timescale multiplier is 1. If decreased below 1, it decreases in increments of 0.1. If increased above 1 it increases in increments of 1. It is bounded to the range [0.1, 11.0].</p>
+      <p>Like most interactive 3D applications, my program has a running timer. A deltaT derived from this timer is used throughout the frame-by-frame update logic, and the user can control a multiplier of this deltaT. You can press , to increase or . to decrease (&lt; and &gt; conceptually) the multiplier. This tends to speed up and slow down "things that are smooth". Some useful side effects of this are: the lights will rotate faster, rotations and translations of the model/camera will be faster, and most importantly the geomorph will proceed faster or slower. By default the timescale multiplier is 1. If decreased below 1, it decreases in increments of 0.1. If increased above 1 it increases in increments of 1. It is bounded to the range [0.1, 11.0].</p>
       <p>Finally, if the user presses c, they will ready the fin test demo required by section 3.3 of the assignment writeup. More on this later.</p>
     </section>
     <section>
@@ -72,13 +72,13 @@
       </pre>
       <p>The time complexity of this operation depends only on the adjacent edges and faces, and at no time walks a whole array. To build the datastructure from the data in the .off file:</p>
       <pre>
-        read in file, create list of vertices and list of indicies
+        read in file, create list of vertices and list of indices
         Find the highest and lowest (x, y, z) values of the vertices.
         Find the length of max(x, y, z) - min(x, y, z)
         Find the center of mass of the model
         For each vertex of the .off file:
            translate the vertex by the center of mass
-           scale the vertex by the lenght of the min and max vectors
+           scale the vertex by the length of the min and max vectors
            add it to the vertices array
         For each 3 indices of the .off file
            Calculate the normal vector
@@ -111,7 +111,7 @@
            let tri be a set that contains the face's 3 constituent vertices
            try to find tri in tris:
               if tris contains tri, then the current face is part of a fin. Insert the current face into fins
-           otherwise the current face is not nessesarily a fin
+           otherwise the current face is not necessarily a fin
            insert tri into tris
       </pre>
       <p>The idea here is that if the newly collapsed vertex is adjacent to two faces that share the same vertices, just in a different order, that these two faces make up a fin. We save the vertices of each face into a set. If we come upon the same combination of vertices more than one, then this second identical face is the second half of a fin. After we've identified all the fins:</p>
@@ -122,7 +122,7 @@
            collapse the edge c
       </pre>
       <p>We pick any edge of the fin face, and collapse it. This will cause the two faces of the fin to become degenerate, and they will be removed by the collapse edge routine, thus eliminating the fin.</p>
-      <p>Above, we disucssed the c keybind that primes the fin test demo required by section 3.3 of the assignment writeup. If we press that, testpatch.off will be loaded, and the edge, that if removed will create a fin is artificially inserted into the collapses set with a negative weight. This collapse will be chosen next to collapse. If we push c then push tab:
+      <p>Above, we discussed the c keybind that primes the fin test demo required by section 3.3 of the assignment writeup. If we press that, testpatch.off will be loaded, and the edge, that if removed will create a fin is artificially inserted into the collapses set with a negative weight. This collapse will be chosen next to collapse. If we push c then push tab:
         <div class="imageCompare"><img src="images/pa2/primedFilled.png"> <img src="images/pa2/primedWireframe.png"></div>
       <p>We see that the next edge we remove will create a fin. If we did not handle the fin case, this would be the result of the collapse:</p>
       <div class="imageCompare"><img src="images/pa2/finFilled.png"> <img src="images/pa2/finWireframe.png"></div>
@@ -194,7 +194,7 @@
       <p>Here we perform largely the same procedure. The important difference is before we expand a vertex, we must ensure that both current lerps reach 1. Otherwise this happens:</p>
       <div class="imageCompare"><img src="images/pa2/planeGrid.png"> → <img src="images/pa2/planeGridOff.png"></div>
       <p>While obviously wrong, the internal datastructure is consistent. The issue is that the vertices in OpenGL's buffers don't match what's in the Mesh's datastructure. This would happen with geomorph down, but there the order is lerp -> collapse, where in expand it's expand -> lerp.</p>
-      <p>One notworthy thing about the Geomorph, unlike the standard collapse is that it's implemented in such a way that the UI remains responsive. With the standard collapse, you ask it to collapse N edges, and a big loop happens and calls collapse N times. While the collapse has low time complexity, it's still a heavyweight operation, and collapsing 10000 edges will cause a few second delay. By contrast, the geomorph advances by deltaT each frame, possibly doing a few collapses. This completes very fast each frame update, and as such 60 frames per second are maintained.</p>
+      <p>One noteworthy thing about the Geomorph, unlike the standard collapse is that it's implemented in such a way that the UI remains responsive. With the standard collapse, you ask it to collapse N edges, and a big loop happens and calls collapse N times. While the collapse has low time complexity, it's still a heavyweight operation, and collapsing 10000 edges will cause a few second delay. By contrast, the geomorph advances by deltaT each frame, possibly doing a few collapses. This completes very fast each frame update, and as such 60 frames per second are maintained.</p>
       <p>Here are a few videos of some geomorphs happening. Click on the image to see the video. However, you don't need a video; you can see any geomorph just by loading a model up in the program, selecting an edge count, pressing g, and then pressing - or =. You can rotate the camera, mess coloring and shading, and even speed up or slow down the timestep during the geomorph!</p>
       <div class="imageCompare"><a href="https://drive.google.com/file/d/0Bx6BpheCXcBWM016RVFnUWlWYzg/view?usp=sharing"><img src="images/pa2/bunnyFull.png"></a></div>
       <div class="imageCompare"><a href="https://drive.google.com/file/d/0Bx6BpheCXcBWY196NU5OYUUzd3c/view?usp=sharing"><img src="images/pa2/teapot.png"></a></div>
@@ -217,10 +217,10 @@
         vBackRight \  / vFrontRight
                     v3
       </pre>
-      <p>Here we have a basic diagram of the Edge structure. As this is a triangle mesh, an edge is adjacent to exactly 0, 1, or 2 edges. It keeps a FaceKey to the two possible adjacent faces. An edge has two constituent vertices, to which it holds indices to. It also has a frontLeft, backLeft, frontRight, and backRight vertex, to which it also holds indices to. As this is a triangle mesh, fontleft = backleft and frontright = backright. However, this has not yet been encoded in the type itself, as I had abandoned WingedEdge shortly after making this realization.</p>
+      <p>Here we have a basic diagram of the Edge structure. As this is a triangle mesh, an edge is adjacent to exactly 0, 1, or 2 edges. It keeps a FaceKey to the two possible adjacent faces. An edge has two constituent vertices, to which it holds indices to. It also has a frontLeft, backLeft, frontRight, and backRight vertex, to which it also holds indices to. As this is a triangle mesh, frontleft = backleft and frontright = backright. However, this has not yet been encoded in the type itself, as I had abandoned WingedEdge shortly after making this realization.</p>
       <p>Supporting all of this are three hash maps: one each for edges, faces, and vertices.</p>
       <p>One nice thing about my setup is traversal is easy. To get from some edge e, to the frontLeft edge attached to it, one just has to look up {e.v1, e.vFontLeft} in the edges map. Edges are specified by their two constituent vertices, so there is no need for an edge to store information about other edges. I used this property to define a suite of methods to traverse across edges.</p>
-      <p>I had written methods to load a mesh from file, and also to transform a WEMesh into an indexed face set suitable for consumption by OpenGL. To laod a WEMesh from file:</p>
+      <p>I had written methods to load a mesh from file, and also to transform a WEMesh into an indexed face set suitable for consumption by OpenGL. To load a WEMesh from file:</p>
       <pre>
         read in vertices and indices from file via Assimp
         for each 3 indices:
@@ -245,7 +245,7 @@
            if {v0, v1} found: set {v0, v1, v2} as f1
            if {v1, v0} found: set {v0, v1, v2} as f0
       </pre>
-      <p>In the first pass over the indices, we ensure entries are created for every nessesary edge. In the second pass, we create all vertices and faces, and we assign faces to edges. At this point, the connectivity should be established. To create an indexed face set from this for consumption by OpenGL:</p>
+      <p>In the first pass over the indices, we ensure entries are created for every necessary edge. In the second pass, we create all vertices and faces, and we assign faces to edges. At this point, the connectivity should be established. To create an indexed face set from this for consumption by OpenGL:</p>
       <pre>
         let pos be an array of vertex positions
         let normal be an array of vertex normal vectors
