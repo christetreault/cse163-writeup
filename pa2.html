@@ -11,7 +11,7 @@
     <section>
       <h1>Downloads</h1>
       <hr>
-      <p><a href="imagingLinux.zip">Linux Binary</a> - Compiled with GCC 5.4.0 on the current Ubuntu LTS (16.04). Tested with an NVidia Geforce GTX 750 TI</p>
+      <p><a href="model.zip">Linux Binary</a> - Compiled with GCC 5.4.0 on the current Ubuntu LTS (16.04). Tested with an NVidia Geforce GTX 750 TI</p>
       <h1>Prerequisites</h1>
       <hr>
       <p>This program has some library prerequisites. Please ensure you have GLFW 3, Assimp and GLEW installed. This program uses OpenGL for display purposes, and requires at least OpenGL 4.1. Assimp is used for model file import only, and the only preprocessing option I used was <code>aiProcess_JoinIdenticalVertices</code> which deduplicates vertices. It was put out that it is acceptable to use Assimp so long as no preprocessing was used. Unfortunately, it turns out that Assimp actually creates duplicate vertices so that every face has 3 "unique" verices if you do not pass in this option. Given that the .off files provided specify indexed face sets, I assume that <code>aiProcess_JoinIdenticalVertices</code> should do nothing, and is fine.</p>
