@@ -1,6 +1,142 @@
+<!DOCTYPE html>
 <html>
+  <head>
+    <title>PA3: Smooth Particle Hydrodynamics</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+  </head>
   <body>
-    <h1>PA3: Final Project</h1>
+    <h1>PA3: Smooth Particle Hydrodynamics</h1>
     <hr>
+    <section>
+      <h2>About SPH</h2>
+      <hr>
+      <p>For project 3, I have implemented an SPH fluid simulation based on a <a href="http://cseweb.ucsd.edu/classes/wi17/cse169-a/readings/2014_EG_SPH_STAR.pdf">State of the Art report published in Eurographics 2014</a> by Jens Orthmann, Barbara Solenthaler, Andreas Kolb, and Matthias Teschner.</p>
+      <p>We describe the physics of fluid motion using Fluid Dynamics. The Navier-Stokes equation is the primary governing equation of fluid dynamics. There are two formulations: the Eulerian and Lagrangian formulations. The Eulerian formulation describes the motion of the fluid from a field of fixed points. The Lagrangian formulation describes the motion of the fluid from the point of view of the fluid itself.</p>
+      <p>SPH implements the Lagrangian formulation as a particle system, where the particles make up the fluid volume. While the Eulerian formulation has potential for high accuracy, there is a major drawback in that the simulation must simulate the entire area that the fluid can possibly occupy. In my simulation, fluid particles can go anywhere from positive to negative infinity int the x and z directions, this is obviously quite impractical. Additionally, the Lagrangian formulation handles splashing situations well.</p>
+    </section>
+    <section>
+      <h2>Navier-Stokes and the Calculus Object</h2>
+      <hr>
+      <p>The first order of business in a physics simulation is to be able to evaluate the relevant equations. For this section, I'll refer to the equations from the STAR report by number. The STAR report lays out formulas to approximate the Navier-Stokes equation. Notably, I do not consider the incompressability term of the Navier-Stokes equation. The STAR report lays out methods to approximate it to within some threshold, unfortunately I did not have time to get these methods working.</p>
+      <p>To implement Navier-Stokes and its related equations, I created a Calculus object. The Calculus object has methods that correspond to the various equations in section 1 of the STAR report. Most of these equations take parameters, and this is exactly why I decided to make this an object instead of a suite of functions. When the program initializes, it creates an instance of Calculus. It then populates the parameters of the equations. In this way, it's easy to tweak the numbers without going through dozens of functions and fining every occurance of some literal value.</p>
+      <p>Another cornerstone of the math portion of SPH is the kernel function. We need to be able to interpolate between values based on particle distances. The kernel calls out to a sub-function that is some function that "should be close to a Gaussian." The STAR report suggests a function (equation 5), and my implementation uses this function. However, the Calculus object is generic, so it takes as parameters a function, and its derivative so a different function can be swapped in.</p>
+      <p>In total, the Calculus object provides methods to calculate the gradient of a scalar field, the divergence of a vector field, the laplacians of scalar or vector fields, as well as a method to compute a pressure field, a method to compute the timestep for integration, and the kernel function itself.</p>
+      <p>As mentioned above, the Calculus object can compute the integration timestep. I'm doing numerical integration (not actually handled by the Calculus object), and as you likely know, if you use too large of a delta T, your simulation blows up. For this simulation, I can calculate an appropriate timestep that is a function of the radius of influence (the support radius) of a particle to ensure that this does not happen.</p>
+    </section>
+    <section>
+      <h2>Neighbor Search</h2>
+      <hr>
+      <p>As you likely noticed from the equations in the STAR report, many of them require summing over all particles in the system. If every particle must sum over every other particle, this gives us O(n^2) time complexity. Opportunity to reduce this number can be found in the observation that the kernel function returns 0 for all particles that are more than the support radius away from each other. To accelerate the Neighbor Search, I've implemented a spatial hash table.</p>
+      <p>At its core, the spatial hash table is build upon an std::unordered_map from positions to sets of particles. When inserting a particle into the set, the particle's location in a 3D grid is determined. Based on the grid position, the particle is inserted into a set of particles. The implementation is similar to the implementation described in section 2.1.3 of the STAR report. The grid size is equal to the support radius.</p>
+      <p>The spatial hash table implements four basic operations: insert, erase, needsUpdate, and nearby. Insert and erase function as you'd expect them to: they find the corresponding set, and either insert the particle or erase it from the set. The needsUpdate method takes two particle, and basically tells you if they are in the same grid cel. At the end of an update iteration, each particle will have moved. However, not every particle will have nessesarily changed grid cels, and I don't want to erase and re-insert every single particle. Using needsUpdate, I can update only those particles that have actually crossed a cel boundary.</p>
+      <p>Finally, nearby returns the set of particles that are within the support radius of a given particle. In pseudocode:</p>
+      <pre>procedure nearby(Particle p)
+   let neighbors be an empty list of Particle
+   for each neighboring cel neighbor in the table:
+      for each particle q in neighbor:
+         if the distance between p and q is less than the support radius:
+            insert q into neighbors
+   return neighbors
+      </pre>
+      <p>The time complexity of this whole operation is O(m), where m is the number of particles in a cel. Since the physics will ensure that there is a fairly small number of particles in a given cel, this is a much more efficient operation than walking the entire set of particles and filtering particles that are outside the support radius. In my experience, with 1000 particles, this number tops out around 30 particles for the whole neighborhood set.</p>
+      <p>You'll notice that I still filter elements that are farther away than the support radius. This is neccesary because the neighborhood region around a particle is a cube, and I need particles in the sphere created by the support radius of the given particle p. If I did not filter all particles q outside the radius, the algorithm would still work. However, it would be noticably slower due to the extra work that it is doing for particles outside the support radius.</p>
+    </section>
+    <section>
+      <h2>The Algorithm</h2>
+      <hr>
+      <p>The STAR report outlines four algorithms for advancing the simulation. I implemented the first of these four. The pseudocode for the algorithm itself can be found in the STAR report as <em>Algorithm 1</em>. Given the spatial hash table discussed above, I are able to find the neighborhood set efficiently. Next, I calculate the density and pressures of each particle. After that, I calculate the forces of pressure, viscosity, and gravity. Finally, I perform Euler integration to calculate the new velocities and positions of each particle. After all the particles are updated, I have a new set of particles. I determine which need to be updated in the spatial hash table, overwrite the old particles, and then update the hash table as nessesary. The result is something that looks very much like water:</p>
+      <div class="imageCompare"><a href="https://drive.google.com/file/d/0Bx6BpheCXcBWdGMtQnBfQUhWekU/view?usp=sharing"><img src="images/pa3/waterSS1.png"></a></div>
+      <p>For this image, and all images in this report, you can click on the image to see a video of the program in action.</p>
+    </section>
+    <section>
+      <h2>Bounding Region</h2>
+      <hr>
+      <p>Unfortunately, nothing in algorithm 1 speaks to how to keep the water contained to some area. If you were to implement it as stated, your particles would fall into oblivion. This is obviously not what I want, and obviously not what my program does. In order to contain the water to some useful area, I've implemented the BoundingRegion class. Given a function of the form <code>y = f(x, z)</code>, as well as the derivatives of f with respect to x and z, the BoundingRegion class can produce the tangent planes of the point underneath a given particle. BoundingRegion has one method: getTangentPlane. This method returns a TangentPlane object, which has a vector normal to, and a point on the plane. It also provides matrices to transform a point to and from the space of the plane. As a convenience, it also provides the point given above in tangent plane space, the distance of the particle to the plane, and if the particle was above the plane. The normal to the plane is not given  in tangent plane space, as this is always (0, 1, 0). The pseudocode of getTangentPlane:</p>
+      <pre>procedure getTangentPlane(Particle p)
+   let plane be an uninitialized TangentPlane
+   let yMin = f(p.x, p.z)
+   if (p.y > yMin + SOME_SMALL_CONSTANT)
+      let plane.abovePlane = true
+      return plane
+
+   let xPrime = f_x(p.x, p.z)
+   let zPrime = f_z(p.x, p.z)
+
+   plane.point = (p.x, yMin, p.z)
+   plane.normal = normalize((xPrime, -1, zPrime))
+
+   if plane.normal.y < 0
+      let plane.normal = -plane.normal
+
+   let planeToPos = p - plane.point
+   let nx = normalize(plane.normal X planeToPos)
+   let nz = normalize(plane.normal X nx)
+
+   let plane.fromTangentSpace = [nx, plane.normal, nz]
+   let plane.toTangentSpace = plane.fromTangentSpace^-1
+
+   let plane.tangentSpacePoint = plane.toTangentSpace * plane.point
+
+   let d = |plane.point . plane.normal|
+   let plane.distance = |(plane.normal . p) - d|
+
+   if (plane.normal . planeToPos) >= 0
+      let plane.abovePlane = true
+   else
+      let plane.abovePlane = false
+
+   return plane
+      </pre>
+      <p>Here, f, f_x, and f_z are the region function and its derivatives, a X b is the cross product, a . b is the dot product, [a, b, c] is a matrix made up of three column vectors, a^-1 is matrix inversion, and |a| is absolute value.</p>
+      <p>First I calculate the yMin value; the y coordinate of the point on the plane. Given the fact that I calculate the TangentPlane directly below the particle, if the particle's y is greater than the calculated yMin, then the particle is above the plane. As an optimization, I short circuit here, and return a TangentPlane object with above plane set to true, and all other values uninitialized. Since the TangentPlane is only used if this flag is false, this is safe. This optimization is useful because matrix inversion is very expensive. Profiling determined that the program was spending an inordinate amount of time in this function.</p>
+      <p>After finding yMin, I find the derivatives with respect to x and z. From this, I get a point on the plane, and a normal vector to the plane. I then invert the normal vector if it's y component is negative. Since I need this normal vector to represent the "floor", I need it's y component to be positive. This is safe to do because the inverse of a vector normal to a plane is also a normal vector to that plane.</p>
+      <p>Next I construct matrices to convert to and from the space of the tangent planes by constructing the fromTangentSpace vector out of the normal vector and two orthogonal vectors. I invert this matrix to get the toTangentSpace matrix. The reason I need this is to calculate friction and elasticity forces. The elasticity forces point straight out from the plane, and the friction forces point along the plane. These are conceptually much easier to deal with if "out from the plane" means "a vector that points in the direction of the unit vector j".</p>
+      <p>Finally, having done the heavy lifting, I calculate the rest of the parameters and return the plane. I convert the point on the plane to tangent plane space, I calculate the distance from the plane, and I calculate if the particle is above the plane. I need to do this because I only short circuit if the particle is more than some threshold above the plane.</p>
+      <p>At the beginning of an update iteration, the tangent plane to each particle is found. I use these tangent planes in two places. The primary location is after integration. I move all the particles, and then I have to check if any particles are out of bounds. If a particle is below its corresponding tangent plane, and the distance from the particle to the plane is greater than some "hard offset", then the particle needs to be corrected. First the particle is converted to tangent plane space. The particle's velocity in Y is inverted, and the particle's modified is limited by friction and elasticity properties. The particle is converted back from tangent plane space and updated. During this process, the particle's velocity is also limited to be within some range. This shouldn't be neccesary, but unfortunately the simulation seems to break down if this not done. I also think it looks better this way.</p>
+      <p>The second place the tangent plane is used is right at the beginning. Immediately after calculating the neighborhood set of each particle, the particle is tested to see if it is below the plane. If it is, an extra "virtual" particle is created and placed just slightly below the particle, based on infromation in the TangentPlane. This particle is then inserted into the neighborhood set. This particle is not included in the pressure and density calculations, it instead gets the pressure and density of the current particle being considered. The net result of all of this is that when the pressure gradient is calculated, the area of least pressure is shifted away from the edge, providing a bit of force away from the edge. If this is not done, the particles have a strange tendancy to stick to the edge of the BoundingRegion, rather than filling it.</p>
+      <p>Four bounding regions are provided:</p>
+      <pre>narrowBowl(x, z) = yMin + (0.05 * (x^2 + z^2))
+wideBowl(x, z) = yMin + (0.0025 * (x^2 + z^2))
+rippleStep(x, z) = yMin + sqrt(x^2 + z^2) + (3 * cos(sqrt(x^2 + z^2)))
+peaksAndValleys(x, z) = yMin + (10 * sin(x / 4)) + (10 * cos(z / 4))
+      </pre>
+      <p>I've also implemented basic functionality to draw the regions themselves. This is simply done by calculating some points in a sqaure, and drawing balls at these locations.</p>
+      <div class="imageCompare"><a href="https://drive.google.com/file/d/0Bx6BpheCXcBWT3Vmd2kySmdKemM/view?usp=sharing"><img src="images/pa3/surfaceScreen.png"></a></div>
+      <p>As you can see, BoundingRegions can also be smoothly blended. This is accomplished simply by returning the interpolation of the two functions, and the derivatives of the two functions. Depending on the particle positions when this is done, this can be quite exciting!</p>
+      <div class="imageCompare"><a href="https://drive.google.com/file/d/0Bx6BpheCXcBWUjJXOWJLODZVc28/view?usp=sharing"><img src="images/pa3/explody.png"></a></div>
+    </section>
+    <section>
+      <h1>So What Else is New?</h1>
+      <hr>
+      <p>Of course, most of this is old news if you're read the progress report I did on this project. But what else is new?</p>
+    </section>
+    <section>
+      <h2>Optimization and Best Practices</h2>
+      <hr>
+      <p>While hardly the most exciting thing in the world, I've spent a good amount of time refining the code, optimizing codepaths, and doing things the "right way" rather than the "right now way". I spent some time with the profiler and found many performance bottlnecks. In particular, my spatial hash table implementation was terribly inefficient.</p>
+      <p>In addition to performance optimizations, I looked into how best to utilize instanced drawing in OpenGL. In order to draw the particles, I'm drawing NUM_PARTICLES instances of a sphere. Each instance takes a toWorld matrix for the whole particle system and a particle position. Each particle is translated by the particle's position, then transformed by the toWorld matrix. This was accomplished by passing in a gigantic array of matrices and vectors as uniforms. This felt super gross to me, but I did not know a better way to do this. After some research, I discovered it's possible to set vertex attributes on a per instance basis, rather than a per-vertex basis. I changed my shaders to expect a position as a vertex attribute, and then pass in the particle position as a per-instance vertex attribute. I was also passing in NUM_PARTICLES copies of the toWorld matrix for some inexplicable reason. This issue was corrected. Previously, the physical limits my my computer's graphics cards mandated only 500 particles per draw, and now I am able to draw 1000 particles, and likely thousands more.</p>
+    </section>
+    <section>
+      <h2>Concurrency</h2>
+      <br>
+      <p>A major new feature of the program since the milestone is the implementation of concurrency in the simulation update function. The way that I've designed the update function is to compute a new set of particles from the old set, rather than update in place. This greatly reduced the complexity of a concurrent solution; as each calculation updates only the new copy of the data, while the old copy remains unchanged. This allows a lock-free solution to concurrency.</p>
+      <p>Basically, every time the algorithm says "forall particles i", the set of particles can be partitioned into NUM_THREADS portions, and solved in parallel. My program queries the number of threads supported by the processor, and splits the array of particles into that many chunks and solves it in parallel. Thanks to this new concurrent solver, I am able to simulate using 1000 particles at 60 frames per second, where I couldn't even simulate 500 at 60 frames per second consistently previously.</p>
+    </section>
+    <section>
+      <h2>Voxel Rendering</h2>
+      <hr>
+      <p>The obvious next step for a fluid simulation is to find a way to draw it nicely. A common technique used for rendering fluid is to use Voxels. In order to do that, I first need to find a way to extract the ISOSurface.</p>
+      <p>Luckily for me, my spatial hash table should serve nicely. The basic scheme I've gone with is: any hash table cel with a particle in it is below the surface, all other cels are above the surface. With just this information alone, we have enough to implement "Minecraft" style voxel rendering, where the surface is approximated using cubes:</p>
+      <div class="imageCompare"><a href="https://drive.google.com/file/d/0Bx6BpheCXcBWM1pjT2N5OV9HR00/view?usp=sharing"><img src="images/pa3/voxels.png"></a></div>
+      <p>The next step is to implement Marching Cubes, where a smooth triangulation is generated. The first step is to determine where individual voxels intersect with the surface. In order to do this, for each voxel I find the neighborhood of the cel. I partition the neighborhood into 8 quadrants (one for each of the 8 corners of a cube). For each quadrant, if that quadrant is empty, then that quadrant is above the surface. Since the voxel itself is below the surface, that means that this quadrant represents a transition point between being below and above the surface.</p>
+      <p>I am able to find these transition points, however this is as far as I got. Unfortunately, time has ran out, and it's time to close the book on this project.</p>
+    </section>
+    <section>
+      <hr>
+      <div class="netscape">
+        This site best viewed with Netscape Navigator<br>Download Netscape Now<br><a href="https://www.mozilla.org/en-US/firefox/products/"><img src="images/netscape.png"></a>
+      </div>
+    </section>
   </body>
 </html>
